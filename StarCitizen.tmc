@@ -1,0 +1,90 @@
+include "target.tmh"
+include "StarCitizenMappings.tmh"
+
+//program startup
+int main()
+{
+	Configure(&HCougar, MODE_EXCLUDED);
+	Configure(&T16000, MODE_EXCLUDED);
+	Configure(&LMFD, MODE_EXCLUDED);
+	Configure(&RMFD, MODE_EXCLUDED);
+	
+    if(Init(&EventHandle)) return 1; // declare the event handler, return on error
+    
+    
+    /////////////////////////
+    //   Keyboard Settings
+    ///////////////////////// 
+    
+    SetKBRate(32, 50);
+	SetKBLayout(KB_ENG);
+	
+	
+	/////////////////////////
+	// IO and UMD buttons
+	/////////////////////////
+	
+	SetShiftButton(&Joystick, S4, &Throttle, BSF, BSB, 0);
+	
+	
+	/////////////////////////
+	/// AXIS MAPPINGS 
+	/////////////////////////
+	
+	
+	///// X AXIS
+	MapAxis(&Joystick, JOYX, DX_X_AXIS, AXIS_NORMAL, MAP_ABSOLUTE);
+	SetSCurve(&Joystick, JOYX, 0, 0, 0, 0, 0);
+	
+	///// Y AXIS
+	
+	MapAxis(&Joystick, JOYY, DX_Y_AXIS, AXIS_NORMAL, MAP_ABSOLUTE);
+	SetSCurve(&Joystick, JOYY, 0, 0, 0, 0, 0);
+
+
+	////// SCX (Jostick Skew Button)
+	MapAxis(&Throttle, SCX, MOUSE_X_AXIS, AXIS_NORMAL, MAP_RELATIVE);
+	SetSCurve(&Throttle, SCX, 0, 0, 0, 3, 0);
+	
+	////// SCY (Jostick Skew Button)
+	MapAxis(&Throttle, SCY, MOUSE_Y_AXIS, AXIS_REVERSED, MAP_RELATIVE);
+	SetSCurve(&Throttle, SCY, 0, 0, 0, 3, 0);
+
+	
+	////// Throttle
+	MapAxis(&Throttle, THR_RIGHT, DX_Z_AXIS, AXIS_NORMAL, MAP_ABSOLUTE);
+	SetJCurve(&Throttle, THR_RIGHT, 38, 75);
+	
+	MapAxis(&Throttle, THR_LEFT, 0, AXIS_NORMAL, MAP_ABSOLUTE);
+	SetSCurve(&Throttle, THR_LEFT, 0, 0, 0, 0, 0);
+	
+	MapAxis(&Throttle, THR_FC, DX_SLIDER_AXIS, AXIS_NORMAL, MAP_ABSOLUTE);
+	SetSCurve(&Throttle, THR_FC, 0, 0, 0, 0, 0);
+	
+
+	///////////////////////////////////////////////////////////
+	//   Key Mappings
+	///////////////////////////////////////////////////////////
+	
+	
+	////////////////////////////
+	/// Main Layer Mappings  (Dogfight Mode)
+	////////////////////////////
+	
+	MapKey(&Throttle, SPDB, SpaceBrake_Newtonian_Brake);
+	MapKey(&Throttle, SPDF, Match_Target_Velocity_Toggle_On);
+	MapKeyR(&Throttle, SPDF, Match_Target_Velocity_Toggle_Off); // On release button toggle break back
+	
+	
+	
+}	
+
+
+//event handler
+int EventHandle(int type, alias o, int x)
+{
+	//printf("%d", sizeof(&o));
+    DefaultMapping(&o, x);
+	
+	//add event handling code here
+}
