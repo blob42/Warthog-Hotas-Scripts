@@ -1,6 +1,12 @@
 include "target.tmh"
 include "StarCitizenMappings.tmh"
 
+
+
+char DECOUPLED_MODE;
+char FAST_DECOUPLED;
+char LONG_DECOUPLED;
+
 //program startup
 int main()
 {
@@ -24,7 +30,17 @@ int main()
 	// IO and UMD buttons
 	/////////////////////////
 	
-	SetShiftButton(&Joystick, S4, &Throttle, BSF, BSB, 0);
+	SetShiftButton(&Joystick, INPUT_LAYER_SHIFT, &Throttle, UPPER_LAYER_SHIFT, LOWER_LAYER_SHIFT, IOTOGGLE+UDTOGGLE);
+	
+	
+	/////////////////////////
+	///// Init LEDS
+	/////////////////////////
+	   ActKey(PULSE+KEYON+LED(&Throttle, LED_ONOFF, LED_CURRENT-LED1)); //set LED 1 OFF 
+	   ActKey(PULSE+KEYON+LED(&Throttle, LED_ONOFF, LED_CURRENT-LED2)); //set LED 2 OFF 
+	   ActKey(PULSE+KEYON+LED(&Throttle, LED_ONOFF, LED_CURRENT-LED3)); //set LED 3 OFF 
+	   ActKey(PULSE+KEYON+LED(&Throttle, LED_ONOFF, LED_CURRENT-LED4)); //set LED 4 OFF 
+	   ActKey(PULSE+KEYON+LED(&Throttle, LED_ONOFF, LED_CURRENT-LED5)); //set LED 5 OFF
 	
 	
 	/////////////////////////
@@ -44,16 +60,16 @@ int main()
 
 	////// SCX (Jostick Skew Button)
 	MapAxis(&Throttle, SCX, MOUSE_X_AXIS, AXIS_NORMAL, MAP_RELATIVE);
-	SetSCurve(&Throttle, SCX, 0, 0, 0, 3, 0);
+	SetSCurve(&Throttle, SCX, 0, 10, 0, 0, -3);
 	
 	////// SCY (Jostick Skew Button)
 	MapAxis(&Throttle, SCY, MOUSE_Y_AXIS, AXIS_REVERSED, MAP_RELATIVE);
-	SetSCurve(&Throttle, SCY, 0, 0, 0, 3, 0);
+	SetSCurve(&Throttle, SCY, 0, 10, 0, 0, -3);
 
 	
 	////// Throttle
-	MapAxis(&Throttle, THR_RIGHT, DX_Z_AXIS, AXIS_NORMAL, MAP_ABSOLUTE);
-	SetJCurve(&Throttle, THR_RIGHT, 38, 75);
+	MapAxis(&Throttle, THR_RIGHT, DX_THROTTLE_AXIS, AXIS_NORMAL, MAP_ABSOLUTE);
+	SetJCurve(&Throttle, THR_RIGHT, 35, 75);
 	
 	MapAxis(&Throttle, THR_LEFT, 0, AXIS_NORMAL, MAP_ABSOLUTE);
 	SetSCurve(&Throttle, THR_LEFT, 0, 0, 0, 0, 0);
@@ -74,6 +90,79 @@ int main()
 	MapKey(&Throttle, SPDB, SpaceBrake_Newtonian_Brake);
 	MapKey(&Throttle, SPDF, Match_Target_Velocity_Toggle_On);
 	MapKeyR(&Throttle, SPDF, Match_Target_Velocity_Toggle_Off); // On release button toggle break back
+	
+	////////////////
+	/// Maneuvering 
+	////////////////
+	
+	/// Switch From Yaw to Roll on Input Layout
+	MapKey(&Joystick, Roll_Switch,
+		EXEC(
+            "MapAxis(&Joystick, JOYX, DX_Z_AXIS, AXIS_NORMAL, MAP_ABSOLUTE);"
+		)
+	);
+	
+	/// Switch From Roll to Yaw on Input Layout
+	MapKeyR(&Joystick, Roll_Switch,
+		EXEC(
+            "DXAxis(DX_Z_AXIS, 0);"
+			"MapAxis(&Joystick, JOYX, DX_X_AXIS, AXIS_NORMAL, MAP_ABSOLUTE);"
+		)
+	);
+	
+	
+	///////////////////////////////////////
+	// DECOUPLED MODE
+	///////////////////////////////////////
+	DECOUPLED_MODE = 0;
+	FAST_DECOUPLED = 0;
+	MapKey(&Joystick, S4,
+	   TEMPO(
+	       /// On Short Press Toggle Fast Decoupled
+	       SEQ(
+	           //// Start FAST_DECOUPLED
+	           EXEC(
+    	           "printf(\"Fast Decoupled Toggled\\xa\");"
+        	       "DECOUPLED_MODE = 1;"
+        	       "ActKey(KEYON+PULSE+Decoupled_Trigger);"
+        	       " ActKey(PULSE+KEYON+LED(&Throttle, LED_ONOFF, LED_CURRENT+LED1));" 
+    	       ),
+    	       //// Stop FAST_DECOUPLED
+    	       EXEC(
+    	           "printf(\"Fast Decoupled Release\\xa\");"
+        	       "DECOUPLED_MODE = 0;"
+        	       "ActKey(KEYON+PULSE+Decoupled_Trigger);"
+        	       " ActKey(PULSE+KEYON+LED(&Throttle, LED_ONOFF, LED_CURRENT-LED1));" 
+    	       )
+ 
+	       ),
+	       // Long Press
+	       CHAIN(
+	           EXEC("printf(\"New Long Decoupled\\xa\");"),
+	           EXEC(
+        	       "DECOUPLED_MODE = 1;"
+        	       "LONG_DECOUPLED = 1;"
+        	       "ActKey(KEYON+Decoupled_Trigger);"
+    	       ),
+    	       LED(&Throttle, LED_ONOFF, LED_CURRENT+LED1)
+	       ),
+	       /// Tempo time
+	       100
+	   )	   
+	);
+	
+	MapKeyR(&Joystick, S4,
+	       /// Handle Long Decoupled
+	       EXEC(
+	           "if (LONG_DECOUPLED) printf(\"Long Decoupled Release\\xa\");"
+    	       "if (LONG_DECOUPLED) DECOUPLED_MODE = 0;"
+               "if (LONG_DECOUPLED) ActKey(Decoupled_Trigger);"
+               "if (LONG_DECOUPLED) ActKey(PULSE+KEYON+LED(&Throttle, LED_ONOFF, LED_CURRENT-LED1));"
+               "if (LONG_DECOUPLED) LONG_DECOUPLED = 0;"
+	       )
+	);
+	
+	
 	
 	
 	

@@ -104,11 +104,34 @@
 // CSD = DXHATDOWN
 // CSL = DXHATLEFT
 
+/////////////////////////////////////
+// DOGFIGHT FLIGHT MODE (Middle Layer)
+/////////////////////////////////////
 
-// -----------------------  Flaying maneuvers ---------------- //
+////////////////////
+///// LAYER BUTTONS
+///////////////////
+
+
+///// Input layer mode buttons
+define INPUT_LAYER_SHIFT S3
+define UPPER_LAYER_SHIFT BSF
+define LOWER_LAYER_SHIFT BSB
+
+
+
+// -----------------------  Flight maneuvers ---------------- //
 
 define	SpaceBrake_Newtonian_Brake	SPC	//
 
 define  Match_Target_Velocity_Toggle_On PULSE+'m'
-define Match_Target_Velocity_Toggle_Off PULSE+'m' // On Button Release
+define  Match_Target_Velocity_Toggle_Off PULSE+'m' // On Button Release
+define  Decoupled_Trigger CAPS
+
+
+/// Roll switch button
+define Roll_Switch S3
+
+/// Reverse Engine button
+define Reverse_Engine LTB
 
