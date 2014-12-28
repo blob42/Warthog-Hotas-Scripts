@@ -126,6 +126,7 @@ define	SpaceBrake_Newtonian_Brake	SPC	//
 
 define  Match_Target_Velocity_Toggle_On PULSE+'m'
 define  Match_Target_Velocity_Toggle_Off PULSE+'m' // On Button Release
+
 define  Decoupled_Trigger CAPS
 
 
@@ -134,4 +135,8 @@ define Roll_Switch S3
 
 /// Reverse Engine button
 define Reverse_Engine LTB
+
+
+define Strafe_Forward 'w'
+define Strafe_Backward 's'
 

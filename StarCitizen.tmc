@@ -2,10 +2,35 @@ include "target.tmh"
 include "StarCitizenMappings.tmh"
 
 
-
 char DECOUPLED_MODE;
 char FAST_DECOUPLED;
 char LONG_DECOUPLED;
+
+
+int set_throttle_to_strafe()
+{
+
+   int ZONES = LIST(0,40,45,50,55,60,100);
+
+   KeyAxis(&Throttle, THR_RIGHT, 0, AXMAP2(
+                            ZONES,
+                            Strafe_Backward,
+                            PULSE+Strafe_Backward,
+                            0,
+                            0,
+                            PULSE+Strafe_Forward,
+                            Strafe_Forward
+                            )
+   );
+   return 0;
+}
+
+int set_throttle_to_default()
+{
+
+   KeyAxis(&Throttle, THR_RIGHT, 0, 0);
+   return 0;
+}
 
 //program startup
 int main()
@@ -59,12 +84,12 @@ int main()
 
 
 	////// SCX (Jostick Skew Button)
-	MapAxis(&Throttle, SCX, MOUSE_X_AXIS, AXIS_NORMAL, MAP_RELATIVE);
-	SetSCurve(&Throttle, SCX, 0, 10, 0, 0, -3);
+	//MapAxis(&Throttle, SCX, MOUSE_X_AXIS, AXIS_NORMAL, MAP_RELATIVE);
+	//SetSCurve(&Throttle, SCX, 0, 10, 0, 0, -3);
 	
 	////// SCY (Jostick Skew Button)
-	MapAxis(&Throttle, SCY, MOUSE_Y_AXIS, AXIS_REVERSED, MAP_RELATIVE);
-	SetSCurve(&Throttle, SCY, 0, 10, 0, 0, -3);
+	//MapAxis(&Throttle, SCY, MOUSE_Y_AXIS, AXIS_REVERSED, MAP_RELATIVE);
+	//SetSCurve(&Throttle, SCY, 0, 10, 0, 0, -3);
 
 	
 	////// Throttle
@@ -115,7 +140,11 @@ int main()
 	// DECOUPLED MODE
 	///////////////////////////////////////
 	DECOUPLED_MODE = 0;
-	FAST_DECOUPLED = 0;
+	LONG_DECOUPLED = 0;
+	
+	
+	
+	
 	MapKey(&Joystick, S4,
 	   TEMPO(
 	       /// On Short Press Toggle Fast Decoupled
@@ -125,14 +154,16 @@ int main()
     	           "printf(\"Fast Decoupled Toggled\\xa\");"
         	       "DECOUPLED_MODE = 1;"
         	       "ActKey(KEYON+PULSE+Decoupled_Trigger);"
-        	       " ActKey(PULSE+KEYON+LED(&Throttle, LED_ONOFF, LED_CURRENT+LED1));" 
+        	       "ActKey(PULSE+KEYON+LED(&Throttle, LED_ONOFF, LED_CURRENT+LED1));"
+                   "set_throttle_to_strafe();"        	       
     	       ),
     	       //// Stop FAST_DECOUPLED
     	       EXEC(
     	           "printf(\"Fast Decoupled Release\\xa\");"
         	       "DECOUPLED_MODE = 0;"
         	       "ActKey(KEYON+PULSE+Decoupled_Trigger);"
-        	       " ActKey(PULSE+KEYON+LED(&Throttle, LED_ONOFF, LED_CURRENT-LED1));" 
+        	       "ActKey(PULSE+KEYON+LED(&Throttle, LED_ONOFF, LED_CURRENT-LED1));"
+        	       "set_throttle_to_default();"
     	       )
  
 	       ),
@@ -142,12 +173,14 @@ int main()
 	           EXEC(
         	       "DECOUPLED_MODE = 1;"
         	       "LONG_DECOUPLED = 1;"
+        	       "ActKey(PULSE+KEYON+LED(&Throttle, LED_ONOFF, LED_CURRENT+LED1));"
         	       "ActKey(KEYON+Decoupled_Trigger);"
+        	       //"set_throttle_to_strafe();"
     	       ),
     	       LED(&Throttle, LED_ONOFF, LED_CURRENT+LED1)
 	       ),
 	       /// Tempo time
-	       100
+	       200
 	   )	   
 	);
 	
@@ -159,8 +192,16 @@ int main()
                "if (LONG_DECOUPLED) ActKey(Decoupled_Trigger);"
                "if (LONG_DECOUPLED) ActKey(PULSE+KEYON+LED(&Throttle, LED_ONOFF, LED_CURRENT-LED1));"
                "if (LONG_DECOUPLED) LONG_DECOUPLED = 0;"
+               //"set_throttle_to_default();"
 	       )
 	);
+	
+	
+    
+	
+	///////////////////////////////////////
+	// END DECOUPLED MODE
+	///////////////////////////////////////
 	
 	
 	
